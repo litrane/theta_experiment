@@ -116,7 +116,7 @@ func New(root common.Hash, db *Database) (*Trie, error) {
 	if root != (common.Hash{}) && root != emptyRoot {
 		rootnode, err := trie.resolveHash(root[:], nil)
 		if err != nil {
-			//logger.Debugf("trie.New, t.originalRoot: %v, t.root: %v, err: %v", trie.originalRoot.Hex(), rootnode, err)
+			logger.Debugf("trie.New, t.originalRoot: %v, t.root: %v, err: %v", trie.originalRoot.Hex(), rootnode, err)
 			return nil, err
 		}
 		trie.root = rootnode

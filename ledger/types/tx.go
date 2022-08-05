@@ -1103,7 +1103,6 @@ func MapChainID(chainIDStr string, blockHeight uint64) *big.Int {
 
 	// For replay attack protection, should NOT use the same chainID as Ethereum
 	chainID := big.NewInt(1).Add(big.NewInt(CHAIN_ID_OFFSET), chainIDWithoutOffset)
-
 	if blockHeight < common.HeightEnableMetachainSupport {
 		return chainID
 	} else {
