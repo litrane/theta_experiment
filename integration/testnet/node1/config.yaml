@@ -5,3 +5,6 @@ p2p:
   port: 11000
   seeds: 127.0.0.1:12000,127.0.0.1:13000,127.0.0.1:14000
   seedPeerOnlyOutbound: true
+rpc:
+  enabled: true
+  port: 16888

@@ -250,6 +250,23 @@ func (ledger *Ledger) ScreenTx(rawTx common.Bytes) (txInfo *core.TxInfo, res res
 
 	return txInfo, res
 }
+func (ledger *Ledger) GetTxInfo(rawTx common.Bytes) (txInfo *core.TxInfo, res result.Result) {
+	var tx types.Tx
+	tx, err := types.TxFromBytes(rawTx)
+	if err != nil {
+		return nil, result.Error("Error decoding tx: %v", err)
+	}
+
+	ledger.mu.RLock()
+	defer ledger.mu.RUnlock()
+
+	txInfo, res = ledger.executor.GetTxInfo(tx)
+	if res.IsError() {
+		return nil, res
+	}
+
+	return txInfo, res
+}
 
 // ProposeBlockTxs collects and executes a list of transactions, which will be used to assemble the next blockl
 // It also clears these transactions from the mempool.

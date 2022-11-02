@@ -3,10 +3,9 @@ package mempool
 import (
 	"context"
 	"encoding/hex"
-	"errors"
+	"fmt"
 	"math/big"
 	"sync"
-	"time"
 
 	log "github.com/sirupsen/logrus"
 
@@ -14,7 +13,6 @@ import (
 	"github.com/thetatoken/theta/common/clist"
 	"github.com/thetatoken/theta/common/math"
 	"github.com/thetatoken/theta/common/pqueue"
-	"github.com/thetatoken/theta/common/result"
 	"github.com/thetatoken/theta/consensus"
 	"github.com/thetatoken/theta/core"
 	dp "github.com/thetatoken/theta/dispatcher"
@@ -31,7 +29,7 @@ func (m MempoolError) Error() string {
 const DuplicateTxError = MempoolError("Transaction already seen")
 const FastsyncSkipTxError = MempoolError("Skip tx during fastsync")
 
-const MaxMempoolTxCount int = 25600
+const MaxMempoolTxCount int = 9999999
 
 //
 // mempoolTransaction implements the pqueue.Element interface
@@ -193,16 +191,18 @@ func (mp *Mempool) InsertTransaction(rawTx common.Bytes) error {
 	// 	return errors.New("mempool is full, please submit your transaction again later")
 	// }
 
-	var txInfo *core.TxInfo
-	var checkTxRes result.Result
+	// var txInfo *core.TxInfo
+	// var checkTxRes result.Result
 
 	// Delay tx verification when in fast sync
 	if mp.consensus.HasSynced() {
-		txInfo, checkTxRes = mp.ledger.ScreenTx(rawTx)
-		if !checkTxRes.IsOK() {
-			logger.Debugf("Transaction screening failed, tx: %v, error: %v", hex.EncodeToString(rawTx), checkTxRes.Message)
-			return errors.New(checkTxRes.Message)
-		}
+		//txInfo, checkTxRes = mp.ledger.ScreenTx(rawTx)
+		txInfo, res := mp.ledger.GetTxInfo(rawTx)
+		fmt.Println(res)
+		// if !checkTxRes.IsOK() {
+		// 	logger.Debugf("Transaction screening failed, tx: %v, error: %v", hex.EncodeToString(rawTx), checkTxRes.Message)
+		// 	return errors.New(checkTxRes.Message)
+		// } gai
 
 		// only record the transactions that passed the screening. This is because that
 		// an invalid transaction could becoume valid later on. For example, assume expected
@@ -331,46 +331,46 @@ func (mp *Mempool) Update(committedRawTxs []common.Bytes) {
 // UpdateUnsafe is the non-locking version of Update. Caller must call Mempool.Lock() before
 // calling this method.
 func (mp *Mempool) UpdateUnsafe(committedRawTxs []common.Bytes) {
-	start := time.Now()
+	//	start := time.Now()
 	mp.removeTxs(committedRawTxs)
-	removeCommittedTxTime := time.Since(start)
+	// removeCommittedTxTime := time.Since(start)
 
-	// Remove Txs that have become obsolete.
-	start = time.Now()
-	count := 0
-	invalidTxs := []common.Bytes{}
-	txGroups := mp.candidateTxs.ElementList()
-	for _, txGroupEl := range *txGroups {
-		txGroup := txGroupEl.(*mempoolTransactionGroup)
-		txs := txGroup.txs.ElementList()
-		for _, txEl := range *txs {
-			count++
+	// // Remove Txs that have become obsolete.
+	// start = time.Now()
+	// count := 0
+	// invalidTxs := []common.Bytes{}
+	// txGroups := mp.candidateTxs.ElementList()
+	// for _, txGroupEl := range *txGroups {
+	// 	txGroup := txGroupEl.(*mempoolTransactionGroup)
+	// 	txs := txGroup.txs.ElementList()
+	// 	for _, txEl := range *txs {
+	// 		count++
 
-			mempoolTx := txEl.(*mempoolTransaction)
+	// 		mempoolTx := txEl.(*mempoolTransaction)
 
-			// Check for outdated txs
-			txHash := getTransactionHash(mempoolTx.rawTransaction)
-			_, exists := mp.txBookeepper.getStatus(txHash)
-			if !exists {
-				// Tx has been removed from bookkeeper due to timeout
-				invalidTxs = append(invalidTxs, mempoolTx.rawTransaction)
-				continue
-			}
+	// 		// Check for outdated txs
+	// 		txHash := getTransactionHash(mempoolTx.rawTransaction)
+	// 		_, exists := mp.txBookeepper.getStatus(txHash)
+	// 		if !exists {
+	// 			// Tx has been removed from bookkeeper due to timeout
+	// 			invalidTxs = append(invalidTxs, mempoolTx.rawTransaction)
+	// 			continue
+	// 		}
 
-			checkTxRes := mp.ledger.ScreenTxUnsafe(mempoolTx.rawTransaction)
-			if !checkTxRes.IsOK() {
-				invalidTxs = append(invalidTxs, mempoolTx.rawTransaction)
-				mp.txBookeepper.markAbandoned(mempoolTx.rawTransaction)
-			}
-		}
-	}
-	screenTxTime := time.Since(start)
+	// 		checkTxRes := mp.ledger.ScreenTxUnsafe(mempoolTx.rawTransaction)
+	// 		if !checkTxRes.IsOK() {
+	// 			invalidTxs = append(invalidTxs, mempoolTx.rawTransaction)
+	// 			mp.txBookeepper.markAbandoned(mempoolTx.rawTransaction)
+	// 		}
+	// 	}
+	// }
+	// screenTxTime := time.Since(start)
 
-	start = time.Now()
-	mp.removeTxs(invalidTxs)
-	removeInvalidTxTime := time.Since(start)
+	// start = time.Now()
+	// mp.removeTxs(invalidTxs)
+	// removeInvalidTxTime := time.Since(start)
 
-	logger.Debugf("UpdateUnsafe: %d tx screened in %v, removeCommittedTxTime = %v, removed %d obsolete Txs in %v: %v,", count, screenTxTime, removeCommittedTxTime, len(invalidTxs), removeInvalidTxTime, invalidTxs)
+	// logger.Debugf("UpdateUnsafe: %d tx screened in %v, removeCommittedTxTime = %v, removed %d obsolete Txs in %v: %v,", count, screenTxTime, removeCommittedTxTime, len(invalidTxs), removeInvalidTxTime, invalidTxs)
 }
 
 func (mp *Mempool) removeTxs(committedRawTxs []common.Bytes) {

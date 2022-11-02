@@ -41,4 +41,5 @@ type Ledger interface {
 	GetGuardianCandidatePool(blockHash common.Hash) (*GuardianCandidatePool, error)
 	GetEliteEdgeNodePoolOfLastCheckpoint(blockHash common.Hash) (EliteEdgeNodePool, error)
 	PruneState(endHeight uint64) error
+	GetTxInfo(rawTx common.Bytes) (*TxInfo, result.Result)
 }
