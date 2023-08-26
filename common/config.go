@@ -143,7 +143,7 @@ const (
 	// CfgDebugLogSelectedEENPs to enable logging of selected eenps
 	CfgDebugLogSelectedEENPs = "debug.logSelectedEENPs"
 
-	CfgOrchestratorEnabled = "orchestrator.enabled0"
+	CfgOrchestratorEnabled = "orchestrator.enabled"
 )
 
 // Starting block heights of features.
