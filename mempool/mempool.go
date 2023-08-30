@@ -222,6 +222,7 @@ func (mp *Mempool) InsertTransaction(rawTx common.Bytes) error {
 		mp.candidateTxs.Push(txGroup)
 		logger.Debugf("rawTx: %v, txInfo: %v", hex.EncodeToString(rawTx), txInfo)
 		logger.Infof("Insert tx, tx.hash: 0x%v", getTransactionHash(rawTx))
+		logger.Infof("map size is %v",mp.size)
 		mp.size++
 
 		return nil

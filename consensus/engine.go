@@ -787,7 +787,8 @@ func (e *ConsensusEngine) handleNormalBlock(eb *core.ExtendedBlock) {
 			e.chain.MarkBlockHasValidatorUpdate(block.Hash())
 		}
 	}
-
+	block.UpdateHash()
+	e.chain.AddBlock(block)
 	e.chain.MarkBlockValid(block.Hash())
 
 	// Skip voting for block older than current best known epoch.

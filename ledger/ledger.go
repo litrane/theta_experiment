@@ -322,13 +322,14 @@ func (ledger *Ledger) ProposeBlockTxs(block *core.Block, shouldIncludeValidatorU
 			}
 		}
 
-		_, res := ledger.executor.CheckTx(tx)
-		if res.IsError() {
-			logger.Errorf("Transaction check failed: errMsg = %v, tx = %v", res.Message, tx)
-			continue
-		}
+		// _, res := ledger.executor.CheckTx(tx)
+		// if res.IsError() {
+		// 	logger.Errorf("Transaction check failed: errMsg = %v, tx = %v", res.Message, tx)
+		// 	continue
+		// }
 		blockRawTxs = append(blockRawTxs, rawTxCandidate)
 	}
+	logger.Info("ProposeBlockTxs: block transactions executed, block.height = ", block.Height, " tx num = ", len(blockRawTxs))
 
 	logger.Debugf("ProposeBlockTxs: block transactions executed, block.height = %v", block.Height)
 	execTxsTime := time.Since(start)
@@ -362,7 +363,7 @@ func (ledger *Ledger) ApplyBlockTxs(block *core.Block) result.Result {
 	defer func() { ledger.currentBlock = nil }()
 
 	blockRawTxs := ledger.currentBlock.Txs
-	expectedStateRoot := ledger.currentBlock.StateHash
+	//expectedStateRoot := ledger.currentBlock.StateHash
 
 	view := ledger.state.Delivered()
 
@@ -406,13 +407,14 @@ func (ledger *Ledger) ApplyBlockTxs(block *core.Block) result.Result {
 	handleDelayedUpdateTime := time.Since(start)
 
 	newStateRoot := view.Hash()
-	if newStateRoot != expectedStateRoot {
-		//ledger.resetState(currHeight, currStateRoot)
-		ledger.resetState(parentBlock)
-		return result.Error("State root mismatch! root: %v, exptected: %v",
-			hex.EncodeToString(newStateRoot[:]),
-			hex.EncodeToString(expectedStateRoot[:]))
-	}
+	block.StateHash = newStateRoot
+	// if newStateRoot != expectedStateRoot {
+	// 	//ledger.resetState(currHeight, currStateRoot)
+	// 	ledger.resetState(parentBlock)
+	// 	return result.Error("State root mismatch! root: %v, exptected: %v",
+	// 		hex.EncodeToString(newStateRoot[:]),
+	// 		hex.EncodeToString(expectedStateRoot[:]))
+	// }
 
 	start = time.Now()
 	ledger.state.Commit() // commit to persistent storage

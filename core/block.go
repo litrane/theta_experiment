@@ -17,7 +17,7 @@ import (
 
 const (
 	// MaxNumRegularTxsPerBlock represents the max number of regular transaction can be inclulded in one block
-	MaxNumRegularTxsPerBlock int = 20
+	MaxNumRegularTxsPerBlock int = 300
 )
 
 var (
