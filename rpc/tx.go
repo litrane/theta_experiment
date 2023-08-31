@@ -204,7 +204,7 @@ func (t *ThetaRPCService) BroadcastRawTransactionAsync(
 	err = t.mempool.InsertTransaction(txBytes)
 	if err == nil || err == mempool.FastsyncSkipTxError {
 		t.mempool.BroadcastTx(txBytes) // still broadcast the transactions received locally during the fastsync mode
-		logger.Infof("Broadcasted raw transaction (async): %v, hash: %v", hex.EncodeToString(txBytes), hash.Hex())
+		// logger.Infof("Broadcasted raw transaction (async): %v, hash: %v", hex.EncodeToString(txBytes), hash.Hex())
 		return nil
 	}
 

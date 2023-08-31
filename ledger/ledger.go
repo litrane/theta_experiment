@@ -30,9 +30,7 @@ var logger *log.Entry = log.WithFields(log.Fields{"prefix": "ledger"})
 
 var _ core.Ledger = (*Ledger)(nil)
 
-//
 // Ledger implements the core.Ledger interface
-//
 type Ledger struct {
 	db           database.Database
 	chain        *blockchain.Chain
@@ -431,8 +429,8 @@ func (ledger *Ledger) ApplyBlockTxs(block *core.Block) result.Result {
 
 	logger.Debugf("ApplyBlockTxs: Cleared mempool transactions, block.height = %v", block.Height)
 
-	logger.Debugf("ApplyBlockTxs: Done, block.height = %v, txProcessTime = %v, handleDelayedUpdateTime = %v, commitTime = %v",
-		block.Height, txProcessTime, handleDelayedUpdateTime, commitTime)
+	logger.Infof("ApplyBlockTxs: Done, block.height = %v, txProcessTime = %v, handleDelayedUpdateTime = %v, commitTime = %v, tx num = %v",
+		block.Height, txProcessTime, handleDelayedUpdateTime, commitTime, len(txProcessTime))
 
 	return result.OKWith(result.Info{"hasValidatorUpdate": hasValidatorUpdate})
 }
@@ -614,7 +612,7 @@ func (ledger *Ledger) pruneStateForRange(startHeight, endHeight uint64) error {
 }
 
 // ResetState sets the ledger state with the designated root
-//func (ledger *Ledger) ResetState(height uint64, rootHash common.Hash) result.Result {
+// func (ledger *Ledger) ResetState(height uint64, rootHash common.Hash) result.Result {
 func (ledger *Ledger) ResetState(block *core.Block) result.Result {
 	ledger.mu.Lock()
 	defer ledger.mu.Unlock()
@@ -636,7 +634,7 @@ func (ledger *Ledger) FinalizeState(height uint64, rootHash common.Hash) result.
 }
 
 // resetState sets the ledger state with the designated root
-//func (ledger *Ledger) resetState(height uint64, rootHash common.Hash) result.Result
+// func (ledger *Ledger) resetState(height uint64, rootHash common.Hash) result.Result
 func (ledger *Ledger) resetState(block *core.Block) result.Result {
 	height := block.Height
 	rootHash := block.StateHash
