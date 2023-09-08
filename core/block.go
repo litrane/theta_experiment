@@ -392,11 +392,11 @@ Block status transitions:
 +-------+          +-------+                          +-------------------+
 |Pending+---+------>Invalid|                    +----->IndirectlyFinalized|
 +-------+   |      +-------+                    |     +-------------------+
-            |                                   |
-            |      +-----+        +---------+   |     +-----------------+
-            +------>Valid+-------->Committed+---+----->DirectlyFinalized|
-                   +-----+        +---------+         +-----------------+
 
+	|                                   |
+	|      +-----+        +---------+   |     +-----------------+
+	+------>Valid+-------->Committed+---+----->DirectlyFinalized|
+	       +-----+        +---------+         +-----------------+
 */
 const (
 	BlockStatusPending BlockStatus = BlockStatus(iota)

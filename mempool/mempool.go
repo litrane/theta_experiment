@@ -3,7 +3,6 @@ package mempool
 import (
 	"context"
 	"encoding/hex"
-	"fmt"
 	"math/big"
 	"sync"
 
@@ -31,9 +30,7 @@ const FastsyncSkipTxError = MempoolError("Skip tx during fastsync")
 
 const MaxMempoolTxCount int = 9999999
 
-//
 // mempoolTransaction implements the pqueue.Element interface
-//
 type mempoolTransaction struct {
 	index          int
 	rawTransaction common.Bytes
@@ -62,10 +59,8 @@ func createMempoolTransaction(rawTransaction common.Bytes, txInfo *core.TxInfo) 
 	}
 }
 
-//
 // mempoolTransactionGroup holds a sequenece of transactions from one account. We sort transaction groups by the priority of
 // their lowest sequence transaction.
-//
 type mempoolTransactionGroup struct {
 	address common.Address
 	txs     *pqueue.PriorityQueue
@@ -131,10 +126,8 @@ func createMempoolTransactionGroup(rawTx common.Bytes, txInfo *core.TxInfo) *mem
 	return txGroup
 }
 
-//
 // Mempool manages the transactions submitted by the clients
 // or relayed from peers
-//
 type Mempool struct {
 	mutex *sync.Mutex
 
@@ -197,8 +190,8 @@ func (mp *Mempool) InsertTransaction(rawTx common.Bytes) error {
 	// Delay tx verification when in fast sync
 	if mp.consensus.HasSynced() {
 		//txInfo, checkTxRes = mp.ledger.ScreenTx(rawTx)
-		txInfo, res := mp.ledger.GetTxInfo(rawTx)
-		fmt.Println(res)
+		txInfo, _ := mp.ledger.GetTxInfo(rawTx)
+		// fmt.Println(res)
 		// if !checkTxRes.IsOK() {
 		// 	logger.Debugf("Transaction screening failed, tx: %v, error: %v", hex.EncodeToString(rawTx), checkTxRes.Message)
 		// 	return errors.New(checkTxRes.Message)
@@ -221,8 +214,8 @@ func (mp *Mempool) InsertTransaction(rawTx common.Bytes) error {
 		}
 		mp.candidateTxs.Push(txGroup)
 		logger.Debugf("rawTx: %v, txInfo: %v", hex.EncodeToString(rawTx), txInfo)
-		logger.Infof("Insert tx, tx.hash: 0x%v", getTransactionHash(rawTx))
-		logger.Infof("map size is %v",mp.size)
+		// logger.Infof("Insert tx, tx.hash: 0x%v", getTransactionHash(rawTx))
+		// logger.Infof("map size is %v",mp.size)
 		mp.size++
 
 		return nil

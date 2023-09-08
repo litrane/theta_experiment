@@ -59,6 +59,8 @@ type ConsensusEngine struct {
 	voteTimerReady bool
 	blockProcessed bool
 
+	processMap map[string]bool
+
 	state *State
 }
 
@@ -82,6 +84,8 @@ func NewConsensusEngine(privateKey *crypto.PrivateKey, db store.Store, chain *bl
 
 		voteTimerReady: false,
 		blockProcessed: false,
+
+		processMap: make(map[string]bool),
 	}
 
 	logger = util.GetLoggerForModule("consensus")
@@ -344,6 +348,12 @@ func (e *ConsensusEngine) processMessage(msg interface{}) (endEpoch bool) {
 		e.checkCC(m.Block)
 		return endEpoch
 	case *core.Block:
+		_, ok := e.processMap[m.BlockHeader.Hash().Hex()]
+		if ok {
+			logger.Infof("I have processed %v", m.BlockHeader.Hash().Hex())
+			return
+		}
+		e.processMap[m.BlockHeader.Hash().Hex()] = true
 		e.logger.WithFields(log.Fields{
 			"block": m.BlockHeader,
 		}).Debug("Received block")

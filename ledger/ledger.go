@@ -30,9 +30,7 @@ var logger *log.Entry = log.WithFields(log.Fields{"prefix": "ledger"})
 
 var _ core.Ledger = (*Ledger)(nil)
 
-//
 // Ledger implements the core.Ledger interface
-//
 type Ledger struct {
 	db           database.Database
 	chain        *blockchain.Chain
@@ -378,6 +376,7 @@ func (ledger *Ledger) ApplyBlockTxs(block *core.Block) result.Result {
 
 	hasValidatorUpdate := false
 	txProcessTime := []time.Duration{}
+	totalStart := time.Now()
 	for _, rawTx := range blockRawTxs {
 		start := time.Now()
 		tx, err := types.TxFromBytes(rawTx)
@@ -394,13 +393,13 @@ func (ledger *Ledger) ApplyBlockTxs(block *core.Block) result.Result {
 		_, res := ledger.executor.ExecuteTx(tx)
 		if res.IsError() {
 			//ledger.resetState(currHeight, currStateRoot)
+			logger.Errorf("tx error from %v, content is %v", tx.(*types.SmartContractTx).From.Address.Hash().Hex(), hex.EncodeToString(rawTx))
 			ledger.resetState(parentBlock)
 			return res
 		}
 		txProcessTime = append(txProcessTime, time.Since(start))
 	}
-
-	logger.Debugf("ApplyBlockTxs: Finish applying block transactions, block.height=%v, txProcessTime=%v", block.Height, txProcessTime)
+	logger.Infof("ApplyBlockTxs: Finish applying block transactions, block.height=%v, txProcessTime=%v, totaltime = %v, total tx = %v", block.Height, txProcessTime, time.Since(totalStart), len(txProcessTime))
 
 	start := time.Now()
 	ledger.handleDelayedStateUpdates(view)
@@ -614,7 +613,7 @@ func (ledger *Ledger) pruneStateForRange(startHeight, endHeight uint64) error {
 }
 
 // ResetState sets the ledger state with the designated root
-//func (ledger *Ledger) ResetState(height uint64, rootHash common.Hash) result.Result {
+// func (ledger *Ledger) ResetState(height uint64, rootHash common.Hash) result.Result {
 func (ledger *Ledger) ResetState(block *core.Block) result.Result {
 	ledger.mu.Lock()
 	defer ledger.mu.Unlock()
@@ -636,7 +635,7 @@ func (ledger *Ledger) FinalizeState(height uint64, rootHash common.Hash) result.
 }
 
 // resetState sets the ledger state with the designated root
-//func (ledger *Ledger) resetState(height uint64, rootHash common.Hash) result.Result
+// func (ledger *Ledger) resetState(height uint64, rootHash common.Hash) result.Result
 func (ledger *Ledger) resetState(block *core.Block) result.Result {
 	height := block.Height
 	rootHash := block.StateHash
