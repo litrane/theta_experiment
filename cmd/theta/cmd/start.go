@@ -27,7 +27,6 @@ import (
 	"github.com/thetatoken/theta/snapshot"
 	"github.com/thetatoken/theta/store/database/backend"
 	"github.com/thetatoken/theta/store/rollingdb"
-	"github.com/thetatoken/theta/version"
 	ks "github.com/thetatoken/theta/wallet/softwallet/keystore"
 )
 
@@ -332,7 +331,7 @@ func printWelcomeBanner() {
 	fmt.Println(" ######################################################### ")
 	fmt.Println("")
 	fmt.Println("")
-	fmt.Printf("Version %v, GitHash %s\nBuilt at %s\n", version.Version, version.GitHash, version.Timestamp)
+	// fmt.Printf("Version %v, GitHash %s\nBuilt at %s\n", version.Version, version.GitHash, version.Timestamp)
 	fmt.Println("")
 }
 
